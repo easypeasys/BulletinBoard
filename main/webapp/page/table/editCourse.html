@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" href="../../dist/formSelects-v4.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">课程名</label>
+        <div class="layui-input-block">
+            <input type="text" name="courseName" id="courseName" lay-verify="required" lay-reqtext="课程名不能为空" placeholder="请输入课程名" value="" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">授课老师</label>
+        <div class="layui-input-block">
+            <select name="teacher" id="teacher" lay-verify="required" >
+                <option value="">请选择</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">开设学院</label>
+        <div class="layui-input-block">
+            <select name="faculty" id="faculty" lay-verify="required" >
+                <option value="">请选择</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">简介</label>
+        <div class="layui-input-block">
+            <textarea name="content" id="content" required lay-verify="required" placeholder="请输入" class="layui-textarea"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+</div>
+<script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../../dist/formSelects-v4.js" charset="utf-8"></script>
+<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf_8"></script>
+<script>
+    var item = localStorage.getItem("courseId");
+    var teacherById = document.getElementById('teacher');
+    var facultyById = document.getElementById('faculty');
+    $(document).ready(function(){
+        layui.use('form', function () {
+            var form = layui.form
+            form.render();
+            $.ajax({
+                type: "Get",
+                url: "../../teacherAdmin",
+                dataType: "text",//类型
+                success: function (res) {
+                    jObject = JSON.parse(res);
+                    for (let i = 0; i < jObject.data.length; i++) {
+                        teacherById.options.add(new Option(jObject.data[i].teacherName, jObject.data[i].teacherName+','+jObject.data[i].teacherId));
+                    }
+                    form.render('select');
+                },
+                fail: function (err) {
+
+                }
+            });
+            $.ajax({
+                type: "Get",
+                url: "../../facultyAdmin",
+                dataType: "text",//类型
+                success: function (res) {
+                    jObject = JSON.parse(res);
+                    for (let i = 0; i < jObject.data.length; i++) {
+                        facultyById.options.add(new Option(jObject.data[i].facultyName, jObject.data[i].facultyName));
+                    }
+                    form.render('select');
+                },
+                fail: function (err) {
+                }
+            });
+            $.ajax({
+                type: "POST",
+                url: "../../courseAdmin",
+                data: {
+                    type: "4",
+                    id: item
+                },
+                dataType: "text",//类型
+                success: function (res) {
+                    jObject = JSON.parse(res);
+                    console.log(jObject);
+                    for (let i = 0; i < teacherById.length; i++) {
+                        if (teacherById[i].value === (jObject.data[0].teacher+','+jObject.data[0].teacherId)) {
+                            teacherById[i].selected = true;
+                            console.log("teachherzhangque");
+                            break;
+                        }
+                    }
+                    for (let i = 0; i < facultyById.length; i++) {
+                        if (facultyById[i].value === jObject.data[0].faculty) {
+                            facultyById[i].selected = true;
+                            console.log("facultyzhangque");
+                            break;
+                        }
+                    }
+                    document.getElementById('courseName').value = jObject.data[0].courseName;
+                    document.getElementById('content').value = jObject.data[0].content;
+                    form.render(); //更新全部
+                },
+
+            });
+        });
+    });
+
+
+
+
+    layui.use(['form'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            data = data.field;
+            console.log(data);
+            $.ajax({
+                type:"POST",
+                url:"../../courseAdmin",
+                data:{
+                    type:"2",
+                    id:item,
+                    teacher:data.teacher,
+                    content:data.content,
+                    courseName:data.courseName,
+                    faculty:data.faculty,
+                    title:data.title,
+                },
+                dataType:"text",//类型
+                success:function (res){
+                    layer.msg('更新成功');
+                },
+                fail:function (err){
+                    layer.msg('更新失败');
+                }
+            })
+
+            return false;
+        });
+
+    });
+</script>
+</body>
+</html>

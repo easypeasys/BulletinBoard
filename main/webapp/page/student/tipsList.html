@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" href="../../dist/formSelects-v4.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<table class="layui-hide" id="test" lay-filter="test"></table>
+
+
+<script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../../dist/formSelects-v4.js" charset="utf-8"></script>
+<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf_8"></script>
+<script>
+    layui.use('table', function(){
+        var table = layui.table;
+
+        table.render({
+            elem: '#test'
+            ,url:'../../tipsServlet'
+            ,cols: [[
+                {field:'id', title:'ID', width:80, fixed: 'left',  sort: true}
+                ,{field:'content', title:'内容', minWidth:200}
+                ,{field:'messageId', title:'留言编号', width:100}
+                ,{field:'createTime', title:'创建时间', width:150}
+
+            ]]
+            ,page: true
+        });
+
+        //监听行单击事件（双击事件为：rowDouble）
+        table.on('row(test)', function(obj){
+            var data = obj.data;
+            $.ajax({
+                type:"POST",
+                url:"../../tipsServlet",
+                data:{
+                    tipsId:data.id,
+                    type: '4',
+                },
+                dataType:"text",
+                success:function (res){
+                    obj.del();
+                    localStorage.setItem("messageId",data.messageId);
+                    var index = layer.open({
+                        title: '详细信息',
+                        type: 2,
+                        shade: 0.2,
+                        maxmin: true,
+                        shadeClose: true,
+                        area: ['100%', '100%'],
+                        content: '../student/detailMessage.html',
+                    });
+                }
+            })
+
+            //标注选中样式
+        });
+
+    });
+
+</script>
+</body>
+</html>

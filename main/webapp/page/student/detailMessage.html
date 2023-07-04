@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.6.3/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" href="../../dist/formSelects-v4.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+    <legend>留言面板</legend>
+</fieldset>
+
+<div class="layui-bg-gray" style="padding: 30px;">
+    <div class="layui-row layui-col-space15">
+            <div class="layui-card">
+                <div class="layui-card-header" id="headerTitle"></div>
+                <div class="layui-card-body" id="bodyContent">
+                    卡片式面板面板通常用于非白色背景色的主体内<br>
+                    从而映衬出边框投影
+                </div>
+            </div>
+    </div>
+</div>
+<script src="../../lib/layui-v2.6.3/layui.js" charset="utf-8"></script>
+<script src="../../dist/formSelects-v4.js" charset="utf-8"></script>
+<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf_8"></script>
+<script>
+    var item = localStorage.getItem("messageId");
+    $(document).ready(function(){
+        layui.use('form', function () {
+            var form = layui.form
+            var str = "" ;
+            $.ajax({
+                type: "POST",
+                url: "../../messageAdmin",
+                data: {
+                    type: "4",
+                    id: item
+                },
+                dataType: "text",//类型
+                success: function (res) {
+                    jObject = JSON.parse(res);
+                    document.getElementById('headerTitle').innerText = jObject.data[0].title;
+                    var body = document.getElementById('bodyContent');
+                    str = str + "教师回答："+ jObject.data[0].content +"<br>" +
+                        "学生附件： <a href=\"javascript:void (0)\" onclick=\"getFile(jObject.data[0].attachForStu)\">"+jObject.data[0].attachForStu+" </a><br>"+
+                        "老师附件： <a href=\"javascript:void (0)\" onclick=\"getFile(jObject.data[0].attachForTea)\">"+jObject.data[0].attachForTea+" </a>";
+                    body.innerHTML = str;
+                },
+            });
+        });
+    });
+    function getFile(fileName){
+        var url = "../../DownLoadServlet";
+// 构造隐藏的form表单
+        var $form = $("<form id='download' class='hidden' method='post'></form>");
+        $form.attr("action",url);
+        $(document.body).append($form);
+// 添加提交参数
+        var $input1 = $("<input name='fileName' type='text'></input>");
+        $input1.attr("value",fileName);
+        $("#download").append($input1);
+// 提交表单
+        $form.submit();
+        $form.remove();
+    }
+</script>
+</body>
+</html>
